@@ -8,6 +8,14 @@ type SharedObject struct {
 	Name string
 }
 
+// MakeSharedObject returns a SharedObject address for the given name.
+//
+// It will panic if the given name is not a valid identifier.
+func MakeSharedObject(name string) SharedObject {
+	assertValidName(name)
+	return SharedObject{Name: name}
+}
+
 func (o SharedObject) isReference() {} // marker for interface Referenceable
 
 func (o SharedObject) String() string {
