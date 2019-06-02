@@ -6,6 +6,8 @@ import (
 	"os"
 	"strings"
 
+	"github.com/envy-tool/envy/internal/addrs"
+
 	"github.com/hashicorp/hcl2/hcl"
 )
 
@@ -23,16 +25,18 @@ type Config struct {
 	// be resolved relative to.
 	BaseDir string
 
-	Commands      map[string]*Command
-	SharedObjects map[string]*SharedObject
+	Commands      map[addrs.Command]*Command
+	Helpers       map[addrs.Helper]*Helper
+	SharedObjects map[addrs.SharedObject]*SharedObject
 }
 
 func newConfig(baseDir string) *Config {
 	return &Config{
 		BaseDir: baseDir,
 
-		Commands:      map[string]*Command{},
-		SharedObjects: map[string]*SharedObject{},
+		Commands:      map[addrs.Command]*Command{},
+		Helpers:       map[addrs.Helper]*Helper{},
+		SharedObjects: map[addrs.SharedObject]*SharedObject{},
 	}
 }
 
@@ -104,7 +108,8 @@ func (c *Config) mergeFile(f *File) hcl.Diagnostics {
 	var diags hcl.Diagnostics
 
 	for _, cmd := range f.Commands {
-		if existing, exists := c.Commands[cmd.Name]; exists {
+		addr := cmd.Addr()
+		if existing, exists := c.Commands[addr]; exists {
 			diags = diags.Append(&hcl.Diagnostic{
 				Severity: hcl.DiagError,
 				Summary:  "Command name conflict",
@@ -113,11 +118,26 @@ func (c *Config) mergeFile(f *File) hcl.Diagnostics {
 			})
 			continue
 		}
-		c.Commands[cmd.Name] = cmd
+		c.Commands[addr] = cmd
+	}
+
+	for _, h := range f.Helpers {
+		addr := h.Addr()
+		if existing, exists := c.Helpers[addr]; exists {
+			diags = diags.Append(&hcl.Diagnostic{
+				Severity: hcl.DiagError,
+				Summary:  "Helper name conflict",
+				Detail:   fmt.Sprintf("A helper %q %q was already declared at %s.", h.Type, h.Name, existing.DeclRange),
+				Subject:  h.DeclRange.Ptr(),
+			})
+			continue
+		}
+		c.Helpers[addr] = h
 	}
 
 	for _, so := range f.SharedObjects {
-		if existing, exists := c.SharedObjects[so.Name]; exists {
+		addr := so.Addr()
+		if existing, exists := c.SharedObjects[addr]; exists {
 			diags = diags.Append(&hcl.Diagnostic{
 				Severity: hcl.DiagError,
 				Summary:  "Shared object name conflict",
@@ -126,7 +146,7 @@ func (c *Config) mergeFile(f *File) hcl.Diagnostics {
 			})
 			continue
 		}
-		c.SharedObjects[so.Name] = so
+		c.SharedObjects[addr] = so
 	}
 
 	return nil

@@ -13,6 +13,7 @@ import (
 // Config.
 type File struct {
 	Commands      []*Command
+	Helpers       []*Helper
 	SharedObjects []*SharedObject
 }
 
@@ -68,6 +69,11 @@ func LoadConfigFile(name string) (*File, hcl.Diagnostics) {
 		case "command":
 			cmd, moreDiags := decodeCommandBlock(block)
 			file.Commands = append(file.Commands, cmd)
+			diags = append(diags, moreDiags...)
+
+		case "helper":
+			helper, moreDiags := decodeHelperBlock(block)
+			file.Helpers = append(file.Helpers, helper)
 			diags = append(diags, moreDiags...)
 
 		case "shared":
