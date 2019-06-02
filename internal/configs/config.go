@@ -23,14 +23,16 @@ type Config struct {
 	// be resolved relative to.
 	BaseDir string
 
-	Commands map[string]*Command
+	Commands      map[string]*Command
+	SharedObjects map[string]*SharedObject
 }
 
 func newConfig(baseDir string) *Config {
 	return &Config{
 		BaseDir: baseDir,
 
-		Commands: map[string]*Command{},
+		Commands:      map[string]*Command{},
+		SharedObjects: map[string]*SharedObject{},
 	}
 }
 
@@ -112,6 +114,19 @@ func (c *Config) mergeFile(f *File) hcl.Diagnostics {
 			continue
 		}
 		c.Commands[cmd.Name] = cmd
+	}
+
+	for _, so := range f.SharedObjects {
+		if existing, exists := c.SharedObjects[so.Name]; exists {
+			diags = diags.Append(&hcl.Diagnostic{
+				Severity: hcl.DiagError,
+				Summary:  "Shared object name conflict",
+				Detail:   fmt.Sprintf("A shared object named %q was already declared at %s.", so.Name, existing.DeclRange),
+				Subject:  so.DeclRange.Ptr(),
+			})
+			continue
+		}
+		c.SharedObjects[so.Name] = so
 	}
 
 	return nil

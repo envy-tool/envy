@@ -12,7 +12,8 @@ import (
 // combine together to produce a whole configuration, represented by type
 // Config.
 type File struct {
-	Commands []*Command
+	Commands      []*Command
+	SharedObjects []*SharedObject
 }
 
 func newFile() *File {
@@ -68,6 +69,12 @@ func LoadConfigFile(name string) (*File, hcl.Diagnostics) {
 			cmd, moreDiags := decodeCommandBlock(block)
 			file.Commands = append(file.Commands, cmd)
 			diags = append(diags, moreDiags...)
+
+		case "shared":
+			so, moreDiags := decodeSharedObjectBlock(block)
+			file.SharedObjects = append(file.SharedObjects, so)
+			diags = append(diags, moreDiags...)
+
 		default:
 			// Should never get here because Body.Content should ensure
 			// everything fits our schema and the above cases should cover

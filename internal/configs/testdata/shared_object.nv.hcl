@@ -1,0 +1,4 @@
+
+shared "example" {
+  foo = "bar"
+}

@@ -5,7 +5,7 @@ import (
 )
 
 func TestLoadConfigFile(t *testing.T) {
-	t.Run("command", func (t *testing.T) {
+	t.Run("command", func(t *testing.T) {
 		f, diags := LoadConfigFile("testdata/command.nv.hcl")
 		if diags.HasErrors() {
 			for _, diag := range diags {
@@ -23,6 +23,27 @@ func TestLoadConfigFile(t *testing.T) {
 
 		cmd := f.Commands[0]
 		if got, want := cmd.Name, "terraform"; got != want {
+			t.Errorf("wrong name %q; want %q", got, want)
+		}
+	})
+	t.Run("shared", func(t *testing.T) {
+		f, diags := LoadConfigFile("testdata/shared_object.nv.hcl")
+		if diags.HasErrors() {
+			for _, diag := range diags {
+				t.Errorf("unexpected diagnostic: %s", diag)
+			}
+			return
+		}
+
+		if got, want := len(f.SharedObjects), 1; got != want {
+			t.Errorf("wrong number of shared objects %d; want %d", got, want)
+			if got == 0 {
+				return
+			}
+		}
+
+		cmd := f.SharedObjects[0]
+		if got, want := cmd.Name, "example"; got != want {
 			t.Errorf("wrong name %q; want %q", got, want)
 		}
 	})
