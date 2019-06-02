@@ -98,5 +98,14 @@ func decodeCommandBlock(block *hcl.Block) (*Command, hcl.Diagnostics) {
 	cmd.Dependencies, moreDiags = decodeDependsOn(decCmd.Dependencies)
 	diags = append(diags, moreDiags...)
 
+	if !validName(cmd.Name) {
+		diags = diags.Append(&hcl.Diagnostic{
+			Severity: hcl.DiagError,
+			Summary:  "Invalid command name",
+			Detail:   "All object names must begin with a letter and contain only letters, digits, and underscores.",
+			Subject:  block.LabelRanges[0].Ptr(),
+		})
+	}
+
 	return cmd, diags
 }
