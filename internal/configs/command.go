@@ -54,7 +54,7 @@ type Command struct {
 	// Dependencies is a collection of references to other objects that
 	// must exist and be active for the command to function, even though
 	// they are not referenced in any of the other configuration expressions.
-	Dependencies []addrs.Reference
+	Dependencies []Reference
 }
 
 // Addr returns the address for the command that was declared.
