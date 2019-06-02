@@ -3,7 +3,7 @@ package cmd
 import (
 	"fmt"
 
-	"github.com/envy-tool/envy/internal/nvdiags"
+	"envy.pw/cli/internal/nvdiags"
 )
 
 // runCommand is a command for running commands.

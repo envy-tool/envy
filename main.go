@@ -5,7 +5,7 @@
 package main
 
 import (
-	"github.com/envy-tool/envy/internal/cmd"
+	"envy.pw/cli/internal/cmd"
 )
 
 func main() {

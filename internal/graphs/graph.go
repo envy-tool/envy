@@ -1,9 +1,9 @@
-package graphs
+package graphs // import "envy.pw/cil/internal/graphs"
 
 import (
 	"sync"
 
-	"github.com/envy-tool/envy/internal/addrs"
+	"envy.pw/cli/internal/addrs"
 )
 
 // Graph represents a directed graph.

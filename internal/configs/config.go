@@ -6,7 +6,7 @@ import (
 	"os"
 	"strings"
 
-	"github.com/envy-tool/envy/internal/addrs"
+	"envy.pw/cli/internal/addrs"
 
 	"github.com/hashicorp/hcl2/hcl"
 )

@@ -1,7 +1,7 @@
 package graphs
 
 import (
-	"github.com/envy-tool/envy/internal/addrs"
+	"envy.pw/cli/internal/addrs"
 )
 
 // CommandNode is a Node representing a Command.

@@ -1,4 +1,4 @@
-module github.com/envy-tool/envy
+module envy.pw/cli
 
 go 1.12
 

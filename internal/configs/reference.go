@@ -3,7 +3,7 @@ package configs
 import (
 	"fmt"
 
-	"github.com/envy-tool/envy/internal/addrs"
+	"envy.pw/cli/internal/addrs"
 	"github.com/hashicorp/hcl2/hcl"
 	"github.com/hashicorp/hcl2/hcl/hclsyntax"
 )

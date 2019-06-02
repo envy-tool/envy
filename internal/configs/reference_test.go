@@ -3,7 +3,7 @@ package configs
 import (
 	"testing"
 
-	"github.com/envy-tool/envy/internal/addrs"
+	"envy.pw/cli/internal/addrs"
 )
 
 func TestDecodeReference(t *testing.T) {

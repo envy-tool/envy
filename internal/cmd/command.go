@@ -1,11 +1,11 @@
 // Package cmd handles the command line interface for Envy.
-package cmd
+package cmd // import "envy.pw/cil/internal/cmd"
 
 import (
 	"fmt"
 	"os"
 
-	"github.com/envy-tool/envy/internal/nvdiags"
+	"envy.pw/cli/internal/nvdiags"
 
 	"github.com/spf13/cobra"
 )
