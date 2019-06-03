@@ -163,3 +163,16 @@ func ParseReferenceStr(str string) (Reference, hcl.Traversal, hcl.Diagnostics) {
 
 	return DecodeReference(traversal)
 }
+
+func exprReferences(expr hcl.Expression) []Reference {
+	traversals := expr.Variables()
+	refs := make([]Reference, 0, len(traversals))
+	for _, traversal := range traversals {
+		ref, _, diags := DecodeReference(traversal)
+		if diags.HasErrors() {
+			continue
+		}
+		refs = append(refs, ref)
+	}
+	return refs
+}

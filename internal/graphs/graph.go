@@ -110,7 +110,7 @@ func (g *Graph) connect(from, to Node) {
 		g.edgesOut[from] = make(NodeSet)
 	}
 	if _, ok := g.edgesIn[to]; !ok {
-		g.edgesOut[to] = make(NodeSet)
+		g.edgesIn[to] = make(NodeSet)
 	}
 	g.nodes.Add(from)
 	g.nodes.Add(to)

@@ -9,3 +9,7 @@ type commandExecNode struct {
 	graphs.CommandNode
 	Config *configs.Command
 }
+
+func (n *commandExecNode) References() []configs.Reference {
+	return n.Config.AllReferences()
+}

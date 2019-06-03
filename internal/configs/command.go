@@ -109,3 +109,16 @@ func decodeCommandBlock(block *hcl.Block) (*Command, hcl.Diagnostics) {
 
 	return cmd, diags
 }
+
+func (c *Command) AllReferences() []Reference {
+	var refs []Reference
+
+	refs = append(refs, exprReferences(c.Executable)...)
+	refs = append(refs, exprReferences(c.CommandLine)...)
+	refs = append(refs, exprReferences(c.Environment)...)
+	refs = append(refs, exprReferences(c.InheritEnvironment)...)
+	refs = append(refs, exprReferences(c.WorkDir)...)
+	refs = append(refs, c.Dependencies...)
+
+	return refs
+}
