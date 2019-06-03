@@ -44,5 +44,7 @@ func (c *runCommand) Run() (int, nvdiags.Diagnostics) {
 		Args:    c.Args[1:],
 		Environ: nil, // TODO
 	}
-	return runner.RunCommand(context.Background(), call, cfg)
+	status, moreDiags := runner.RunCommand(context.Background(), call, cfg)
+	diags = diags.Append(moreDiags)
+	return status, diags
 }
