@@ -84,7 +84,7 @@ func (g *Graph) addReferents(current Node, nodes map[addrs.Referenceable]Node, f
 		if target == nil && !exists {
 			newTarget, moreDiags := factory(NodeReferenceableAddr(current), ref)
 			diags = diags.Append(moreDiags)
-			if diags.HasErrors() {
+			if moreDiags.HasErrors() {
 				continue
 			}
 			target = newTarget

@@ -54,7 +54,7 @@ func graphForRunCommand(call *CommandCall, cfg *configs.Config) (*graphs.Graph, 
 		},
 		Config: cc,
 	}
-	g.AddWithReferents(root, func(referrer addrs.Referenceable, ref configs.Reference) (graphs.Node, nvdiags.Diagnostics) {
+	moreDiags := g.AddWithReferents(root, func(referrer addrs.Referenceable, ref configs.Reference) (graphs.Node, nvdiags.Diagnostics) {
 		var diags nvdiags.Diagnostics
 		switch addr := ref.Addr.(type) {
 
@@ -77,6 +77,7 @@ func graphForRunCommand(call *CommandCall, cfg *configs.Config) (*graphs.Graph, 
 			return nil, diags
 		}
 	})
+	diags = diags.Append(moreDiags)
 
 	return g, diags
 }
