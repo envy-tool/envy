@@ -9,32 +9,26 @@ import (
 // Other packages may embed this type in another struct to create a specialized
 // CommandNode.
 type CommandNode struct {
-	addr addrs.Command
-	isGraphNode
+	Addr addrs.Command
+	graphNodeImpl
 }
 
-// Addr returns the address of the command the node represents.
-func (n *CommandNode) Addr() addrs.Command {
-	return n.addr
-}
+var _ Node = (*CommandNode)(nil)
 
 // ReferenceableAddr is the implementation of ReferenceableNode.
 func (n *CommandNode) ReferenceableAddr() addrs.Referenceable {
-	return n.Addr()
+	return n.Addr
 }
 
 // HelperNode is a Node representing a Helper.
 type HelperNode struct {
-	addr addrs.Helper
-	isGraphNode
+	Addr addrs.Helper
+	graphNodeImpl
 }
 
-// Addr returns the address of the helper the node represents.
-func (n *HelperNode) Addr() addrs.Helper {
-	return n.addr
-}
+var _ Node = (*HelperNode)(nil)
 
 // ReferenceableAddr is the implementation of ReferenceableNode.
 func (n *HelperNode) ReferenceableAddr() addrs.Referenceable {
-	return n.Addr()
+	return n.Addr
 }

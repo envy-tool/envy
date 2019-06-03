@@ -19,7 +19,7 @@ func Execute() {
 	var workingDir string
 
 	type Command interface {
-		Run() nvdiags.Diagnostics
+		Run() (int, nvdiags.Diagnostics)
 	}
 	var command Command
 
@@ -70,10 +70,26 @@ func Execute() {
 		os.Exit(1)
 	}
 
-	diags := command.Run()
-	// TODO: Print out the diagnostics, if any
-	if diags.HasErrors() {
-		os.Exit(1)
+	if command == nil {
+		os.Exit(0)
 	}
-	os.Exit(0)
+
+	status, diags := command.Run()
+	for _, diag := range diags {
+		// TODO: Nicer diagnostic output
+		msgs := diag.Messages()
+		switch diag.Severity() {
+		case nvdiags.Error:
+			fmt.Fprintf(os.Stderr, "\nError: %s\n\n%s\n", msgs.Summary, msgs.Detail)
+		case nvdiags.Warning:
+			fmt.Fprintf(os.Stderr, "\nWarning: %s\n\n%s\n", msgs.Summary, msgs.Detail)
+		}
+	}
+	if len(diags) > 0 {
+		fmt.Fprint(os.Stderr, "\n")
+	}
+	if status == 0 && diags.HasErrors() {
+		status = 126 // default exit status for failures
+	}
+	os.Exit(status)
 }

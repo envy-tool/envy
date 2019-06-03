@@ -21,12 +21,20 @@ type Node interface {
 	isGraphNode()
 }
 
-type isGraphNode struct{} // embed this in graph node types
+type graphNodeImpl struct{} // embed this in graph node types
 
-func (n isGraphNode) isGraphNode() {}
+func (n graphNodeImpl) isGraphNode() {}
 
 // NodeSet is a mutable set of nodes.
 type NodeSet map[Node]struct{}
+
+func NewGraph() *Graph {
+	return &Graph{
+		nodes:    make(NodeSet),
+		edgesIn:  make(map[Node]NodeSet),
+		edgesOut: make(map[Node]NodeSet),
+	}
+}
 
 // HasNode returns true if and only if the graph has the given node.
 func (g *Graph) HasNode(node Node) bool {
@@ -45,11 +53,18 @@ func (g *Graph) HasEdge(from, to Node) bool {
 	return ok
 }
 
+// Nodes returns a set of all of the nodes in the graph.
+func (g *Graph) Nodes() NodeSet {
+	g.l.RLock()
+	defer g.l.RUnlock()
+	return g.nodes.Copy()
+}
+
 // Referents returns a set of the nodes that the given node refers to. That is,
 // the nodes at the "to" end of edges starting from the given node.
 func (g *Graph) Referents(node Node) NodeSet {
 	g.l.RLock()
-	defer g.l.Unlock()
+	defer g.l.RUnlock()
 	return g.edgesOut[node].Copy()
 }
 
@@ -57,22 +72,28 @@ func (g *Graph) Referents(node Node) NodeSet {
 // the nodes at the "from" end of edges ending at the given node.
 func (g *Graph) Referrers(node Node) NodeSet {
 	g.l.RLock()
-	defer g.l.Unlock()
+	defer g.l.RUnlock()
 	return g.edgesIn[node].Copy()
+}
+
+// AddNode inserts a new node into the graph, with no incoming or outgoing
+// edges.
+//
+// If the node is already present then this is a no-op.
+func (g *Graph) AddNode(node Node) {
+	g.l.Lock()
+	g.nodes.Add(node)
+	g.l.Unlock()
 }
 
 // Connect creates a new edge from the first given node to the second given
 // node. If such an edge already exists, this is a no-op.
+//
+// If either of the given nodes is not already in the graph, it is first
+// implicitly added.
 func (g *Graph) Connect(from, to Node) {
 	g.l.Lock()
-	if _, ok := g.edgesOut[from]; !ok {
-		g.edgesOut[from] = make(NodeSet)
-	}
-	if _, ok := g.edgesIn[to]; !ok {
-		g.edgesOut[to] = make(NodeSet)
-	}
-	g.edgesOut[from].Add(to)
-	g.edgesIn[to].Add(from)
+	g.connect(from, to)
 	g.l.Unlock()
 }
 
@@ -80,13 +101,30 @@ func (g *Graph) Connect(from, to Node) {
 // node, or does nothing if no such edge exists.
 func (g *Graph) Disconnect(from, to Node) {
 	g.l.Lock()
+	g.connect(from, to)
+	g.l.Unlock()
+}
+
+func (g *Graph) connect(from, to Node) {
+	if _, ok := g.edgesOut[from]; !ok {
+		g.edgesOut[from] = make(NodeSet)
+	}
+	if _, ok := g.edgesIn[to]; !ok {
+		g.edgesOut[to] = make(NodeSet)
+	}
+	g.nodes.Add(from)
+	g.nodes.Add(to)
+	g.edgesOut[from].Add(to)
+	g.edgesIn[to].Add(from)
+}
+
+func (g *Graph) disconnect(from, to Node) {
 	ns, ok := g.edgesOut[from]
 	if !ok {
 		return // nothing to do
 	}
 	delete(ns, to)
 	delete(g.edgesIn[to], from) // we assume edgesIn and edgesOut will always be consistent
-	g.l.Unlock()
 }
 
 // NodesForAddr searches the graph for nodes that represent the given referencable

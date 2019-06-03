@@ -6,6 +6,10 @@ import (
 	"path/filepath"
 	"runtime"
 
+	"envy.pw/cli/internal/configs"
+	"envy.pw/cli/internal/nvdiags"
+	"envy.pw/cli/internal/runs"
+
 	"github.com/apparentlymart/go-userdirs/userdirs"
 )
 
@@ -42,6 +46,22 @@ func newRunContext(configDir, workingDir string) (*RunContext, error) {
 		ConfigDir:  configDir,
 		WorkingDir: workingDir,
 	}, nil
+}
+
+// LoadConfig loads a configuration from the context's configuration directory.
+func (c *RunContext) LoadConfig() (*configs.Config, nvdiags.Diagnostics) {
+	var diags nvdiags.Diagnostics
+	cfg, hclDiags := configs.LoadConfig(c.ConfigDir)
+	diags = diags.Append(hclDiags)
+	return cfg, diags
+}
+
+// NewRunner creates a runner using the settings from the context.
+func (c *RunContext) NewRunner() (*runs.Runner, nvdiags.Diagnostics) {
+	// TODO: Eventually this should be doing a bunch more work to compute
+	// various other contextual information, such as a set of available
+	// provider plugins.
+	return runs.NewRunner(), nil
 }
 
 func supportedOS() bool {
