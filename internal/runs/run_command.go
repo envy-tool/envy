@@ -54,28 +54,12 @@ func graphForRunCommand(call *CommandCall, cfg *configs.Config) (*graphs.Graph, 
 		},
 		Config: cc,
 	}
-	g.AddWithReferents(root, func(ref configs.Reference) (graphs.Node, nvdiags.Diagnostics) {
+	g.AddWithReferents(root, func(referrer addrs.Referenceable, ref configs.Reference) (graphs.Node, nvdiags.Diagnostics) {
 		var diags nvdiags.Diagnostics
 		switch addr := ref.Addr.(type) {
 
 		case addrs.Helper:
-			hc, exists := cfg.Helpers[addr]
-			if !exists {
-				diags = diags.Append(nvdiags.WithSource(
-					nvdiags.Error,
-					"Reference to undeclared helper",
-					fmt.Sprintf("No helper %q %q is declared in the configuration.", addr.Type, addr.Name),
-					ref.SourceRange,
-				))
-				return nil, diags
-			}
-
-			return &helperRunNode{
-				HelperNode: graphs.HelperNode{
-					Addr: addr,
-				},
-				Config: hc,
-			}, diags
+			return makeHelperRunNode(addr, ref.SourceRange, cfg)
 
 		case addrs.Path:
 			return nil, nil // No node required for a path
@@ -87,7 +71,7 @@ func graphForRunCommand(call *CommandCall, cfg *configs.Config) (*graphs.Graph, 
 			diags = diags.Append(nvdiags.WithSource(
 				nvdiags.Error,
 				"Invalid reference",
-				fmt.Sprintf("Cannot refer to %s from %s.", ref.Addr, root.Addr),
+				fmt.Sprintf("Cannot refer to %s from %s.", ref.Addr, referrer),
 				ref.SourceRange,
 			))
 			return nil, diags

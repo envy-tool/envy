@@ -32,7 +32,7 @@ type ReferrerNode interface {
 // The factory must make decisions based only on the address of the given
 // reference. The source range of the reference is included only for use when
 // creating diagnostics.
-type ReferenceableNodeFactory func(ref configs.Reference) (Node, nvdiags.Diagnostics)
+type ReferenceableNodeFactory func(referrer addrs.Referenceable, ref configs.Reference) (Node, nvdiags.Diagnostics)
 
 // NodeReferences is a helper to get the references for a node that may or
 // may not implement ReferrerNode.
@@ -72,9 +72,7 @@ func (g *Graph) AddWithReferents(start Node, factory ReferenceableNodeFactory) n
 		nodes[addr] = n
 	}
 
-	var diags nvdiags.Diagnostics
-	g.addReferents(start, nodes, factory)
-	return diags
+	return g.addReferents(start, nodes, factory)
 }
 
 func (g *Graph) addReferents(current Node, nodes map[addrs.Referenceable]Node, factory ReferenceableNodeFactory) nvdiags.Diagnostics {
@@ -84,7 +82,7 @@ func (g *Graph) addReferents(current Node, nodes map[addrs.Referenceable]Node, f
 	for _, ref := range refs {
 		target, exists := nodes[ref.Addr]
 		if target == nil && !exists {
-			newTarget, moreDiags := factory(ref)
+			newTarget, moreDiags := factory(NodeReferenceableAddr(current), ref)
 			diags = diags.Append(moreDiags)
 			if diags.HasErrors() {
 				continue
