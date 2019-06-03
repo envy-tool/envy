@@ -76,6 +76,48 @@ func (g *Graph) Referrers(node Node) NodeSet {
 	return g.edgesIn[node].Copy()
 }
 
+// Roots returns a set of the nodes that are not referred to by any other nodes.
+func (g *Graph) Roots() NodeSet {
+	ret := make(NodeSet)
+	g.l.RLock()
+	for n := range g.nodes {
+		if len(g.edgesIn[n]) == 0 {
+			ret.Add(n)
+		}
+	}
+	g.l.RUnlock()
+	return ret
+}
+
+// Leaves returns a set of the nodes that do not refer to any other nodes.
+func (g *Graph) Leaves() NodeSet {
+	ret := make(NodeSet)
+	g.l.RLock()
+	for n := range g.nodes {
+		if len(g.edgesOut[n]) == 0 {
+			ret.Add(n)
+		}
+	}
+	g.l.RUnlock()
+	return ret
+}
+
+// IsLeaf returns true if and only if the given node does not refer to any
+// other nodes.
+func (g *Graph) IsLeaf(node Node) bool {
+	g.l.RLock()
+	defer g.l.RUnlock()
+	return len(g.edgesOut[node]) == 0
+}
+
+// IsRoot returns true if and only if the given node is not referred to by
+// any other nodes.
+func (g *Graph) IsRoot(node Node) bool {
+	g.l.RLock()
+	defer g.l.RUnlock()
+	return len(g.edgesIn[node]) == 0
+}
+
 // AddNode inserts a new node into the graph, with no incoming or outgoing
 // edges.
 //
